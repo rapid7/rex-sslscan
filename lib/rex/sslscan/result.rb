@@ -2,6 +2,7 @@
 
 require 'rex/socket'
 require 'rex/text/table'
+require 'set'
 
 module Rex::SSLScan
 class Result
