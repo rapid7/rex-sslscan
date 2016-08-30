@@ -1,4 +1,4 @@
-# Rex::Sslscan
+# Rex::SSLScan
 
 This library is a pure ruby implmenetation of the SSLScan tool originally written by Ian Ventura-Whiting. It currently depends on the system version of OpenSSL.
 To be effective you will want to use this gem with a version of OpenSSL compiled to support the old versions of SSL and weak ciphers. We will be ivnestigating ways
