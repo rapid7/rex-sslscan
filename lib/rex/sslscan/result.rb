@@ -126,7 +126,7 @@ class Result
   # Adds the details of a cipher test to the Result object.
   # @param version [Symbol] the SSL Version
   # @param cipher [String] the SSL cipher
-  # @param key_length [Fixnum] the length of encryption key
+  # @param key_length [Integer] the length of encryption key
   # @param status [Symbol] :accepted or :rejected
   def add_cipher(version, cipher, key_length, status)
     unless @supported_versions.include? version
@@ -136,7 +136,7 @@ class Result
         || @deprecated_weak_ciphers.include?(cipher)
       raise ArgumentError, "Must be a valid SSL Cipher for #{version}!"
     end
-    unless key_length.kind_of? Fixnum
+    unless key_length.kind_of? Integer
       raise ArgumentError, "Must supply a valid key length"
     end
     unless [:accepted, :rejected].include? status

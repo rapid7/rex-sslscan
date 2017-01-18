@@ -16,8 +16,8 @@ class Scanner
 
   # Initializes the scanner object
   # @param host [String] IP address or hostname to scan
-  # @param port [Fixnum] Port number to scan, default: 443
-  # @param timeout [Fixnum] Timeout for connections, in seconds. default: 5
+  # @param port [Integer] Port number to scan, default: 443
+  # @param timeout [Integer] Timeout for connections, in seconds. default: 5
   # @raise [StandardError] Raised when the configuration is invalid
   def initialize(host,port = 443,context = {},timeout=5)
     @host       = host
@@ -42,10 +42,7 @@ class Scanner
     rescue
       return false
     end
-    return false unless @port.kind_of? Fixnum
-    return false unless @port >= 0 and @port <= 65535
-    return false unless @timeout.kind_of? Fixnum
-    return true
+    @port.kind_of?(Integer) && @port >= 0 && @port <= 65535 && @timeout.kind_of?(Integer)
   end
 
   # Initiate the Scan against the target. Will test each cipher one at a time.
