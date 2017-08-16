@@ -59,19 +59,29 @@ class Scanner
       return scan_result
     end
 
+    threads = []
+    ciphers = Queue.new
     @supported_versions.each do |ssl_version|
-      sslctx = OpenSSL::SSL::SSLContext.new(ssl_version)
-      sslctx.ciphers.each do |cipher_name, ssl_ver, key_length, alg_length|
-        begin
-          status = test_cipher(ssl_version, cipher_name)
-          scan_result.add_cipher(ssl_version, cipher_name, key_length, status)
-          if status == :accepted and scan_result.cert.nil?
-            scan_result.cert = get_cert(ssl_version, cipher_name)
+      threads << Thread.new do
+        sslctx = OpenSSL::SSL::SSLContext.new(ssl_version)
+        sslctx.ciphers.each do |cipher_name, ssl_ver, key_length, alg_length|
+          begin
+            status = test_cipher(ssl_version, cipher_name)
+            ciphers << [ssl_version, cipher_name, key_length, status]
+            if status == :accepted and scan_result.cert.nil?
+              scan_result.cert = get_cert(ssl_version, cipher_name)
+            end
+          rescue Rex::SSLScan::Scanner::InvalidCipher
+            next
           end
-        rescue Rex::SSLScan::Scanner::InvalidCipher
-          next
         end
       end
+    end
+    threads.each { |thr| thr.join }
+
+    until ciphers.empty? do
+      cipher = ciphers.pop
+      scan_result.add_cipher(*cipher)
     end
     scan_result
   end
