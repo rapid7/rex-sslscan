@@ -6,6 +6,9 @@ module Rex::SSLScan
 
 class Scanner
 
+  class InvalidCipher < StandardError
+  end
+
   attr_accessor :context
   attr_accessor :host
   attr_accessor :port
@@ -25,10 +28,10 @@ class Scanner
     @timeout    = timeout
     @context    = context
     if check_opensslv2 == true
-      @supported_versions = [:SSLv2, :SSLv3, :TLSv1]
+      @supported_versions = [:SSLv2, :SSLv3, :TLSv1, :TLSv1_1, :TLSv1_2]
       @sslv2 = true
     else
-      @supported_versions = [:SSLv3, :TLSv1]
+      @supported_versions = [:SSLv3, :TLSv1, :TLSv1_1, :TLSv1_2]
       @sslv2 = false
     end
     raise StandardError, "The scanner configuration is invalid" unless valid?
@@ -59,10 +62,14 @@ class Scanner
     @supported_versions.each do |ssl_version|
       sslctx = OpenSSL::SSL::SSLContext.new(ssl_version)
       sslctx.ciphers.each do |cipher_name, ssl_ver, key_length, alg_length|
-        status = test_cipher(ssl_version, cipher_name)
-        scan_result.add_cipher(ssl_version, cipher_name, key_length, status)
-        if status == :accepted and scan_result.cert.nil?
-          scan_result.cert = get_cert(ssl_version, cipher_name)
+        begin
+          status = test_cipher(ssl_version, cipher_name)
+          scan_result.add_cipher(ssl_version, cipher_name, key_length, status)
+          if status == :accepted and scan_result.cert.nil?
+            scan_result.cert = get_cert(ssl_version, cipher_name)
+          end
+        rescue Rex::SSLScan::Scanner::InvalidCipher
+          next
         end
       end
     end
@@ -185,7 +192,7 @@ class Scanner
       raise StandardError, "Your OS hates freedom! Your OpenSSL libs are compiled without SSLv2 support!"
     else
       unless OpenSSL::SSL::SSLContext.new(ssl_version).ciphers.flatten.include? cipher
-        raise StandardError, "Must be a valid SSL Cipher for #{ssl_version}!"
+        raise InvalidCipher, "Must be a valid SSL Cipher for #{ssl_version}!"
       end
     end
   end

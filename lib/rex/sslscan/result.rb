@@ -15,7 +15,7 @@ class Result
   def initialize()
     @cert = nil
     @ciphers = Set.new
-    @supported_versions = [:SSLv2, :SSLv3, :TLSv1]
+    @supported_versions = [:SSLv2, :SSLv3, :TLSv1, :TLSv1_1, :TLSv1_2]
     @deprecated_weak_ciphers = [
       'ECDHE-RSA-DES-CBC3-SHA',
       'ECDHE-ECDSA-DES-CBC3-SHA',
@@ -32,7 +32,9 @@ class Result
       'EXP-EDH-DSS-DES-CBC-SHA',
       'EXP-DES-CBC-SHA',
       'EXP-RC2-CBC-MD5',
-      'EXP-RC4-MD5'
+      'EXP-RC4-MD5',
+      'EXP-RC4-MD5',
+      'DES-CBC-SHA'
     ]
   end
 
@@ -107,8 +109,16 @@ class Result
     !(accepted(:TLSv1).empty?)
   end
 
+  def supports_tlsv1_1?
+    !(accepted(:TLSv1_1).empty?)
+  end
+
+  def supports_tlsv1_2?
+    !(accepted(:TLSv1_2).empty?)
+  end
+
   def supports_ssl?
-    supports_sslv2? or supports_sslv3? or supports_tlsv1?
+    supports_sslv2? or supports_sslv3? or supports_tlsv1? or supports_tlsv1_1? or supports_tlsv1_2?
   end
 
   def supports_weak_ciphers?
@@ -118,7 +128,9 @@ class Result
   def standards_compliant?
     if supports_ssl?
       return false if supports_sslv2?
+      return false if supports_sslv3?
       return false if supports_weak_ciphers?
+      return false if supports_tlsv1?
     end
     true
   end
@@ -132,8 +144,7 @@ class Result
     unless @supported_versions.include? version
       raise ArgumentError, "Must be a supported SSL Version"
     end
-    unless OpenSSL::SSL::SSLContext.new(version).ciphers.flatten.include?(cipher) \
-        || @deprecated_weak_ciphers.include?(cipher)
+    unless OpenSSL::SSL::SSLContext.new(version).ciphers.flatten.include?(cipher) || @deprecated_weak_ciphers.include?(cipher)
       raise ArgumentError, "Must be a valid SSL Cipher for #{version}!"
     end
     unless key_length.kind_of? Integer
@@ -200,7 +211,7 @@ class Result
       case version
       when :all
         return @ciphers.select{|cipher| cipher[:status] == state}
-      when :SSLv2, :SSLv3, :TLSv1
+      when :SSLv2, :SSLv3, :TLSv1, :TLSv1_1, :TLSv1_2
         return @ciphers.select{|cipher| cipher[:status] == state and cipher[:version] == version}
       else
         raise ArgumentError, "Invalid SSL Version Supplied: #{version}"

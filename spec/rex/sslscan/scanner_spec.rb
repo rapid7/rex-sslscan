@@ -55,7 +55,7 @@ RSpec.describe Rex::SSLScan::Scanner do
 
     context ":rejected should be returned if" do
       it "scans a server that doesn't support the supplied SSL version" do
-        expect(subject.test_cipher(:SSLv3, "DES-CBC-SHA")).to eq :rejected
+        expect(subject.test_cipher(:SSLv3, "AES256-SHA")).to eq :rejected
       end
 
       it "scans a server that doesn't support the cipher" do
@@ -74,7 +74,7 @@ RSpec.describe Rex::SSLScan::Scanner do
 
   context "when retrieving the cert" do
     it "should return nil if it can't connect" do
-      expect(subject.get_cert(:SSLv3, "DES-CBC-SHA")).to eq nil
+      expect(subject.get_cert(:SSLv3, "AES256-SHA")).to eq nil
     end
 
 #    XXX Reenable this spec when a way to use older versions of OpenSSL

@@ -462,10 +462,8 @@ RSpec.describe Rex::SSLScan::Result do
       expect(subject.standards_compliant?).to eq false
     end
 
-    it "should return true if SSLv2 and Weak Ciphers are disabled" do
-      subject.add_cipher(:SSLv3, "AES256-SHA", 256, :accepted)
-      subject.add_cipher(:TLSv1, "AES256-SHA", 256, :accepted)
-      subject.add_cipher(:SSLv3, "AES128-SHA", 128, :accepted)
+    it "should return true if SSLv2-TLSv1 and Weak Ciphers are disabled" do
+      subject.add_cipher(:TLSv1_1, "AES256-SHA", 256, :accepted)
       expect(subject.standards_compliant?).to eq true
     end
   end
