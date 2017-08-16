@@ -62,9 +62,9 @@ class Scanner
     threads = []
     ciphers = Queue.new
     @supported_versions.each do |ssl_version|
-      threads << Thread.new do
-        sslctx = OpenSSL::SSL::SSLContext.new(ssl_version)
-        sslctx.ciphers.each do |cipher_name, ssl_ver, key_length, alg_length|
+      sslctx = OpenSSL::SSL::SSLContext.new(ssl_version)
+      sslctx.ciphers.each do |cipher_name, ssl_ver, key_length, alg_length|
+        threads << Thread.new do
           begin
             status = test_cipher(ssl_version, cipher_name)
             ciphers << [ssl_version, cipher_name, key_length, status]
