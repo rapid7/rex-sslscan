@@ -146,6 +146,8 @@ RSpec.describe Rex::SSLScan::Result do
             :status => :accepted})
         rescue ArgumentError => e
           expect(e.message).to eq "unknown SSL method `SSLv2'."
+        rescue OpenSSL::OpenSSLError => e
+          expect(e.message).to eq "SSL_CTX_set_min_proto_version"
         end
       end
 
@@ -204,6 +206,8 @@ RSpec.describe Rex::SSLScan::Result do
             :status => :rejected})
         rescue ArgumentError => e
           expect(e.message).to eq "unknown SSL method `SSLv2'."
+        rescue OpenSSL::OpenSSLError => e
+          expect(e.message).to eq "SSL_CTX_set_min_proto_version"
         end
       end
 
@@ -375,6 +379,8 @@ RSpec.describe Rex::SSLScan::Result do
           expect(subject.supports_sslv2?).to eq true
         rescue ArgumentError => e
           expect(e.message).to eq "unknown SSL method `SSLv2'."
+        rescue OpenSSL::OpenSSLError => e
+          expect(e.message).to eq "SSL_CTX_set_min_proto_version"
         end
       end
     end
@@ -454,6 +460,8 @@ RSpec.describe Rex::SSLScan::Result do
         expect(subject.standards_compliant?).to eq false
       rescue ArgumentError => e
         expect(e.message).to eq "unknown SSL method `SSLv2'."
+      rescue OpenSSL::OpenSSLError => e
+        expect(e.message).to eq "SSL_CTX_set_min_proto_version"
       end
     end
 

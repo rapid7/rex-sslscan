@@ -59,7 +59,7 @@ RSpec.describe Rex::SSLScan::Scanner do
       end
 
       it "scans a server that doesn't support the cipher" do
-        expect(subject.test_cipher(:SSLv3, "DHE-DSS-AES256-SHA")).to eq :rejected
+        expect(subject.test_cipher(:SSLv3, "TLS_CHACHA20_POLY1305_SHA256")).to eq :rejected
       end
     end
 

@@ -6,11 +6,11 @@ require 'rex/sslscan/version'
 Gem::Specification.new do |spec|
   spec.name          = "rex-sslscan"
   spec.version       = Rex::Sslscan::VERSION
-  spec.authors       = ["David Maloney"]
-  spec.email         = ["DMaloney@rapid7.com"]
+  spec.authors       = ['Metasploit Hackers']
+  spec.email         = ['msfdev@metasploit.com']
 
   spec.summary       = %q{Ruby Exploitation(REX) Library for scanning the SSL/TLS capabilities of a server}
-  spec.description   = %q{This library is a pure ruby implmenetation of the SSLScan tool originally written
+  spec.description   = %q{This library is a pure ruby implmentation of the SSLScan tool originally written
                           by Ian Ventura-Whiting. It currently depends on the system version of OpenSSL}
   spec.homepage      = "https://github.com/rapid7/rex-sslscan"
 
@@ -22,9 +22,8 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = '>= 2.2.0'
 
-  spec.add_development_dependency "bundler", "~> 1.12"
-  spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "rspec", "~> 3.0"
+  spec.add_development_dependency "rake"
+  spec.add_development_dependency "rspec"
 
   spec.add_runtime_dependency "rex-core"
   spec.add_runtime_dependency "rex-text"
