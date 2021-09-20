@@ -40,6 +40,8 @@ class Scanner
   # Checks whether the scanner option has a valid configuration
   # @return [Boolean] True or False, the configuration is valid.
   def valid?
+    return false unless @host
+
     begin
       @host = Rex::Socket.getaddress(@host, true)
     rescue
