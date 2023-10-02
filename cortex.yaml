@@ -1,0 +1,15 @@
+---
+info:
+  title: Rex Sslscan
+  description: Created by David Maloney via the GitHub Connector
+  x-cortex-git:
+    github:
+      alias: r7org
+      repository: rapid7/rex-sslscan
+  x-cortex-tag: rex-sslscan
+  x-cortex-type: service
+  x-cortex-domain-parents:
+  - tag: metasploit
+openapi: 3.0.1
+servers:
+- url: "/"
