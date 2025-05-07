@@ -16,17 +16,20 @@ class Scanner
 
   attr_reader :supported_versions
   attr_reader :sslv2
+  attr_reader :tls_server_name_indication
 
   # Initializes the scanner object
   # @param host [String] IP address or hostname to scan
   # @param port [Integer] Port number to scan, default: 443
   # @param timeout [Integer] Timeout for connections, in seconds. default: 5
+  # @param tls_server_name_indication [String,nil] TLS Server Name Indication (SNI)
   # @raise [StandardError] Raised when the configuration is invalid
-  def initialize(host,port = 443,context = {},timeout=5)
+  def initialize(host,port = 443,context = {},timeout=5,tls_server_name_indication: nil)
     @host       = host
     @port       = port
     @timeout    = timeout
     @context    = context
+    @tls_server_name_indication = tls_server_name_indication
     if check_opensslv2 == true
       @supported_versions = [:SSLv2, :SSLv3, :TLSv1, :TLSv1_1, :TLSv1_2]
       @sslv2 = true
@@ -55,7 +58,7 @@ class Scanner
     scan_result.openssl_sslv2 = sslv2
     # If we can't get any SSL connection, then don't bother testing
     # individual ciphers.
-    if test_ssl == :rejected and test_tls == :rejected
+    if test_ssl == :rejected and test_tls(versions: supported_tls_versions) == :rejected
       return scan_result
     end
 
@@ -106,24 +109,29 @@ class Scanner
     return :accepted
   end
 
-  def test_tls
-    begin
-      scan_client = Rex::Socket::Tcp.create(
-        'Context'    => @context,
-        'PeerHost'   => @host,
-        'PeerPort'   => @port,
-        'SSL'        => true,
-        'SSLVersion' => :TLSv1,
-        'Timeout'    => @timeout
-      )
-    rescue ::Exception => e
-      return :rejected
-    ensure
-      if scan_client
-        scan_client.close
+  def test_tls(versions: [:TLSv1])
+    supported_version = versions.find do |version|
+      begin
+        scan_client = Rex::Socket::Tcp.create(
+          'Context'    => @context,
+          'PeerHost'   => @host,
+          'PeerPort'   => @port,
+          'PeerHostname' => @tls_server_name_indication,
+          'SSL'        => true,
+          'SSLVersion' => version,
+          'Timeout'    => @timeout
+        )
+        version
+      rescue ::Exception => e
+        nil
+      ensure
+        if scan_client
+          scan_client.close
+        end
       end
     end
-    return :accepted
+
+    supported_version ? :accepted : :rejected
   end
 
   # Tests the specified SSL Version and Cipher against the configured target
@@ -137,6 +145,7 @@ class Scanner
         'Context'    => @context,
         'PeerHost'   => @host,
         'PeerPort'   => @port,
+        'PeerHostname' => @tls_server_name_indication,
         'SSL'        => true,
         'SSLVersion' => ssl_version,
         'SSLCipher'  => cipher,
@@ -164,6 +173,7 @@ class Scanner
       scan_client = Rex::Socket::Tcp.create(
         'PeerHost'   => @host,
         'PeerPort'   => @port,
+        'PeerHostname' => @tls_server_name_indication,
         'SSL'        => true,
         'SSLVersion' => ssl_version,
         'SSLCipher'  => cipher,
@@ -186,6 +196,10 @@ class Scanner
 
 
   protected
+
+  def supported_tls_versions
+    @supported_versions.select { |v| v.to_s.start_with?('TLS') }
+  end
 
   # Validates that the SSL Version and Cipher are valid both seperately and
   # together as part of an SSL Context.
