@@ -23,6 +23,8 @@ Or install it yourself as:
 ## Usage
 
 ```
+require 'rex-sslscan'
+
 scanner = Rex::SSLScan::Scanner.new('192.168.1.1', 443)
 results = scanner.scan
 print_status results.to_s
